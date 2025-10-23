@@ -13,7 +13,7 @@ import Mathlib.Data.Finset.Image
 import Mathlib.Algebra.Group.Pi.Basic -- for Pi.single
 
 --import Mathlib.Tactic.Explode
-
+-- Adding a comment
 open NNReal
 
 variable {τ : Type}
@@ -41,7 +41,7 @@ abbrev Prob (p : ℚ) : Prop := 0 ≤ p ∧ p ≤ 1
 
 namespace Prob
 
-variable {p x y : ℚ}
+variable {p x y : ℚ} --creating variables
 
 @[simp]
 theorem of_complement ( hp : Prob p) : Prob (1-p) := by
@@ -79,6 +79,7 @@ variable {L : List ℚ}
 
 def scale (L : List ℚ) (c : ℚ) : List ℚ := (L.map fun x↦x*c)
 
+<<<<<<< HEAD
 -- TODO: find the theorem in mathlib that does this
 theorem nonempty_length_gt_one (h : ¬L.isEmpty) : L.length ≥ 1 :=
     by simp_all
@@ -88,6 +89,8 @@ theorem nonempty_length_gt_one (h : ¬L.isEmpty) : L.length ≥ 1 :=
 
 
 
+=======
+>>>>>>> 0180696e44d16569411df972bb11e3e748a64a85
 @[simp]
 theorem scale_sum : (L.scale c).sum = c * L.sum :=
   by induction L
@@ -415,9 +418,15 @@ theorem nonempty : ¬P.ℙ.isEmpty :=
   by intro a;
      simp_all only [LSimplex.nonempty P.prob, List.isEmpty_iff]
 
+--TODO: try to shorten/simplify the theorem below
 theorem length_gt_zero : P.length ≥ 1 :=
-    by simp [Finprob.length]
-       exact List.length_pos_iff (P.nonempty)
+  by
+    simp [Finprob.length]
+    have hne : P.ℙ ≠ [] := by
+      intro hnil
+      have : P.ℙ.isEmpty = true := by simp [List.isEmpty, hnil]
+      exact P.nonempty this
+    exact Nat.succ_le_of_lt (List.length_pos_iff.mpr hne)
 
 theorem shrink_length (supp : P.supported) : (P.shrink supp).length = P.length - 1 :=
     by  have h := Finprob.nonempty P
