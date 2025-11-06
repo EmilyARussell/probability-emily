@@ -79,7 +79,7 @@ variable {L : List ℚ}
 
 def scale (L : List ℚ) (c : ℚ) : List ℚ := (L.map fun x↦x*c)
 
-<<<<<<< HEAD
+
 -- TODO: find the theorem in mathlib that does this
 theorem nonempty_length_gt_one (h : ¬L.isEmpty) : L.length ≥ 1 :=
     by simp_all
@@ -87,10 +87,6 @@ theorem nonempty_length_gt_one (h : ¬L.isEmpty) : L.length ≥ 1 :=
        · contradiction
        · exact tsub_add_cancel_iff_le.mp rfl
 
-
-
-=======
->>>>>>> 0180696e44d16569411df972bb11e3e748a64a85
 @[simp]
 theorem scale_sum : (L.scale c).sum = c * L.sum :=
   by induction L
@@ -375,7 +371,6 @@ structure Finprob : Type where
   ℙ : List ℚ
   prob : LSimplex ℙ
 
-
 lemma List.unique_head_notin_tail (L : List τ) (ne : L ≠ []) (nodup : L.Nodup) :
       L.head ne ∉ L.tail :=
   by induction L
@@ -455,8 +450,12 @@ theorem phead_supp_ne_one (supp : P.supported) : P.phead ≠ 1 :=
            simp [Finprob.phead]
            exact supp
 
+theorem len_ge_one : P.length ≥ 1 :=
+  by simp [Finprob.length]
+     have h := P.prob.nonempty
+     have : P.ℙ.length ≠ 0 := by simp_all only [ne_eq, List.length_eq_zero_iff, not_false_eq_true]
+     exact Nat.one_le_iff_ne_zero.mpr this
 
- -- len_ge_one is same as length_gt_zero, deleted
 
 theorem shrink_shorter (supp : P.supported) :
                                  (P.shrink supp).length = P.length - 1 :=
@@ -555,7 +554,6 @@ def List.iprodb (ℙ : List ℚ) (B : FinRV Bool) : ℚ :=
     match ℙ with
     | [] => 0
     | head :: tail =>  (B tail.length).rec 0 head + tail.iprodb B
-
 
 variable (P : Finprob) (B : FinRV Bool) (C : FinRV Bool)
 
@@ -740,6 +738,8 @@ variable (P : Finprob) (X Y Z: FinRV ℚ) (B : FinRV Bool)
 
 def expect : ℚ := P.ℙ.iprod X
 
+#check P.ℙ.iprod
+
 notation "𝔼[" X "//" P "]" => expect P X
 
 -- expectation for a joint probability space and random variable
@@ -788,6 +788,9 @@ theorem Prob.law_of_total_expectation (P : Finprob) (X : FinRV ℚ) (B : FinRV B
 
 end Expectations
 
+-- define pmf of FinRV
+-- theorem ℙ[x^~ = 1] = 𝔼[1{x^~ = 1}]
+
 
 
 -- The section defines measurabilty of random variables
@@ -802,7 +805,7 @@ def Finprob.SampleMap (P : Finprob) (m : ℕ) : Type := Fin P.length → Fin m
 variable {ρ : Type} {P : Finprob} {m : ℕ}
 
 instance : CoeOut (Finprob.SampleMap P m) (FinRV (Fin m)) where coe a :=
-           (fun ω ↦ if h : ω < P.length then a ⟨ω, h⟩ else a ⟨0,P.length_gt_zero⟩)
+           (fun ω ↦ if h : ω < P.length then a ⟨ω, h⟩ else a ⟨0,P.len_ge_one⟩)
 
 /-- Defines that the random variable X is measurable with respect to a map
 and a reduced random variable Y
