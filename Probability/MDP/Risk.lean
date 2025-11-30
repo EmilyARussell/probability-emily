@@ -13,7 +13,6 @@ def rangeOfRV (X : FinRV n ℚ) : Finset ℚ := Finset.univ.image X
 
 /-- Value-at-Risk of X at level α: VaR_α(X) = min { t ∈ X(Ω) | P[X ≤ t] ≥ α }.
 If we assume 0 ≤ α ∧ α ≤ 1, then the "else 0" branch is never used. -/
-
 def VaR (P : Findist n) (X : FinRV n ℚ) (α : ℚ) : ℚ :=
   let S : Finset ℚ := (rangeOfRV X).filter (fun t => cdf P X t ≥ α)
   if h : S.Nonempty then
@@ -22,23 +21,28 @@ def VaR (P : Findist n) (X : FinRV n ℚ) (α : ℚ) : ℚ :=
     0
 
 notation "VaR[" α "," X "//" P "]" => VaR P X α
+-- TODO (Marek): What do you think about : 
+-- notation "VaR[ X "//" P "," α "]" => VaR P X α
+-- I think that the α goes better with the probability that the variable
 
 theorem VaR_monotone (P : Findist n) (X Y : FinRV n ℚ) (α : ℚ)
   (hXY : ∀ ω, X ω ≤ Y ω) : VaR P X α ≤ VaR P Y α := by
-  have hcdf : ∀ t : ℚ, cdf P X t ≤ cdf P Y t := by
+  have hcdf : ∀ t : ℚ, cdf P Y t ≤ cdf P X t := by
     intro t
-    have h_ind : (𝕀 ∘ (Y ≤ᵣ t)) ≤ (𝕀 ∘ (X ≤ᵣ t)) := by
-      intro ω
-      have h1 : Y ω ≤ t → X ω ≤ t := by
-        intro hY
-        exact le_trans (hXY ω) hY
-      by_cases hY : Y ω ≤ t
-      · have hX : X ω ≤ t := by exact h1 hY
-        simp [𝕀, indicator, FinRV.leq, hY, hX]
-      · simp [𝕀, indicator, FinRV.leq, hY]
     simp [cdf]
+    apply exp_monotone
+    intro ω
+    have h1 : Y ω ≤ t → X ω ≤ t := by
+      intro hY
+      exact le_trans (hXY ω) hY
+    by_cases hY : Y ω ≤ t
+    · have hX : X ω ≤ t := by exact h1 hY
+      simp [𝕀, indicator, FinRV.leq, hY, hX]
+    · simp [𝕀, indicator, FinRV.leq, hY]
+      by_cases hx2 : X ω ≤ t
+      · simp [hx2]
+      · simp [hx2] ---these lines seem really unnecessary but idk how to fix it
 
-    sorry
   sorry
 
 theorem VaR_translation_invariant (P : Findist n) (X : FinRV n ℚ) (α c : ℚ) :
@@ -66,6 +70,10 @@ def CVaR (P : Findist n) (X : FinRV n ℚ) (α : ℚ) : ℚ :=
   else
      num / den
 
+-- NOTE (Marek): The CVaR, as defined above is not convex/concave. 
+-- See Page 14 at https://www.cs.unh.edu/~mpetrik/pub/tutorials/risk2/dlrl2023.pdf
+-- NOTE (Marek): The CVaR above is defined for costs and not rewards 
+
 notation "CVaR[" α "," X "//" P "]" => CVaR P X α
 
 --TODO: prove...
@@ -74,5 +82,6 @@ notation "CVaR[" α "," X "//" P "]" => CVaR P X α
 -- positive homogeneity: c > 0 → CVaR[α, (fun ω => c * X ω) // P] = c * CVaR[α, X // P]
 -- convexity
 -- CVaR ≥ VaR: CVaR[α, X // P] ≥ VaR[α, X // P]
+
 
 end Risk
